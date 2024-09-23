@@ -27,7 +27,7 @@ namespace WindowsFormPdfGenerator
             // Open the document to write content
             doc.Open();
 
-            // Add an image
+            // Add image
             iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance("D:\\Programs c#\\PdfGenerator\\pictures\\scene.jpg");
             doc.Add(img);
 
