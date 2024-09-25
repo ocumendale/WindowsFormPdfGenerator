@@ -3,6 +3,7 @@ using iTextSharp.text;
 using MySql.Data.MySqlClient;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
+using Rectangle = iTextSharp.text.Rectangle;
 
 
 
@@ -32,6 +33,40 @@ namespace WindowsFormPdfGenerator
             /* Add image
             iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance("D:\\Programs c#\\PdfGenerator\\pictures\\scene.jpg");
             doc.Add(img);*/
+
+            iTextSharp.text.Image background = iTextSharp.text.Image.GetInstance("D:\\Barangay Picture\\Caloocan_City.png");
+
+            float imageWidth = 500f;
+            float imageHeight = 300f;
+            background.ScaleAbsolute(imageWidth, imageHeight);
+
+            // Get the page size
+            Rectangle pageSize = doc.PageSize;
+            float pageWidth = pageSize.Width;
+            float pageHeight = pageSize.Height;
+
+            // Calculate the center position
+            float xPosition = (pageWidth - imageWidth) / 2;
+            float yPosition = (pageHeight - imageHeight) / 2;
+
+            // Set the absolute position to center the image
+            background.SetAbsolutePosition(xPosition, yPosition);
+
+            // Create a PdfGState to control the opacity
+            PdfGState gState = new PdfGState();
+            gState.FillOpacity = 0.1f; // Set opacity (0.0f to 1.0f, where 1.0 is fully opaque)
+
+            // Add the background image with opacity
+            PdfContentByte canvas = writer.DirectContent;
+            canvas.SaveState();
+            canvas.SetGState(gState);
+            canvas.AddImage(background);
+            canvas.RestoreState();
+
+
+            background.ScaleToFit(doc.PageSize.Width, doc.PageSize.Height);
+            background.SetAbsolutePosition(0, 0); // Position it at the bottom-left corner
+            // Add the image to the document
 
             // Header of the document
             iTextSharp.text.Font font1bold = FontFactory.GetFont(FontFactory.TIMES_BOLD, 16, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
