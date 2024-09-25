@@ -4,6 +4,8 @@ using MySql.Data.MySqlClient;
 using System.ComponentModel.DataAnnotations;
 using System.IO;
 
+
+
 namespace WindowsFormPdfGenerator
 {
     public partial class Form1 : Form
@@ -27,17 +29,84 @@ namespace WindowsFormPdfGenerator
             // Open the document to write content
             doc.Open();
 
-            // Add image
+            /* Add image
             iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance("D:\\Programs c#\\PdfGenerator\\pictures\\scene.jpg");
-            doc.Add(img);
+            doc.Add(img);*/
 
-            // Add a paragraph
-            Paragraph name = new Paragraph($"Name: {textBox1.Text} {textBox2.Text}");
-            Paragraph address = new Paragraph($"Address: {textBox3.Text}");
-            Paragraph number = new Paragraph($"Phone Number: {textBox4.Text}");
-            doc.Add(name);
-            doc.Add(address);
-            doc.Add(number);
+            // Header of the document
+            iTextSharp.text.Font font1bold = FontFactory.GetFont(FontFactory.TIMES_BOLD, 16, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+            iTextSharp.text.Font font1 = FontFactory.GetFont(FontFactory.TIMES, 16, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+            iTextSharp.text.Font font = FontFactory.GetFont(FontFactory.TIMES, 11, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+            iTextSharp.text.Font fontTitle = FontFactory.GetFont(FontFactory.TIMES_BOLD, 14, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+            iTextSharp.text.Font fontRight = FontFactory.GetFont(FontFactory.TIMES_BOLD, 13, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+
+            Paragraph headerClearance = new Paragraph($"Republic City of the Philippines", font1bold);          
+            Paragraph headerClearance1 = new Paragraph($"City of Caloocan",font);            
+            Paragraph headerClearance2 = new Paragraph($"OFFICE OF THE PUNONG BARANGAY",font1);
+            Paragraph headerClearance3 = new Paragraph($"Barangay 22, Zone 2, District II", font);
+            Paragraph title = new Paragraph($"\n\nBARANGAY CERTIFICATION", fontTitle);
+            Paragraph bodyIndigency = new Paragraph($"\n\n\t\t\tThis is to Certify that {textBox1.Text} {textBox2.Text}., A resident of {textBox3.Text} will use this Barangay Certification.\n" +
+                $"\n\t\tThis certification is issued for whatever legal purpose or purposes this may serve.\n" +
+                $"\n\t\tSigned this on the (Date Today) at BARANGAY 22 ZONE 2 DISTRICT II , CALOOCAN CITY, NATIONAL CAPITAL REGION, PHILIPPINES.\n" +
+                $"\n\t\tThis certification is valid only for 1 year from the issuance.\n");
+
+            Paragraph signature = new Paragraph($"\n\nSIGNATURE", fontTitle);
+            Paragraph punongBarangay = new Paragraph($"Punong Barangay", font);
+            Paragraph chairMan = new Paragraph($"RONALDO B. BAUTISTA", fontRight);
+            Paragraph dateRight = new Paragraph($"DATE TODAY", font);
+
+            Paragraph witness = new Paragraph($"\n\nWitnessed by:", font);
+            Paragraph wSignature = new Paragraph($"SIGNATURE", fontTitle);
+            Paragraph witnessMan = new Paragraph($"ANTHONY S. MULAWIN", fontRight);
+            Paragraph pos = new Paragraph($"Secretary", font);
+            
+
+            headerClearance.Alignment = Element.ALIGN_CENTER;
+            headerClearance1.Alignment = Element.ALIGN_CENTER;
+            headerClearance2.Alignment = Element.ALIGN_CENTER;
+            headerClearance3.Alignment = Element.ALIGN_CENTER;
+            title.Alignment = Element.ALIGN_CENTER;
+
+            signature.Alignment = Element.ALIGN_RIGHT;
+            punongBarangay.Alignment = Element.ALIGN_RIGHT;
+            chairMan.Alignment = Element.ALIGN_RIGHT;
+            dateRight.Alignment = Element.ALIGN_RIGHT;
+            witness.Alignment = Element.ALIGN_RIGHT;
+            chairMan.Alignment = Element.ALIGN_RIGHT;
+            dateRight.Alignment = Element.ALIGN_RIGHT;
+            witness.Alignment = Element.ALIGN_RIGHT;
+            wSignature.Alignment = Element.ALIGN_RIGHT;
+            witnessMan.Alignment = Element.ALIGN_RIGHT;
+            pos.Alignment = Element.ALIGN_RIGHT;
+
+            doc.Add(headerClearance);
+            doc.Add(headerClearance1);
+            doc.Add(headerClearance2);
+            doc.Add(headerClearance3);
+            doc.Add(title);
+            doc.Add(bodyIndigency);
+
+            doc.Add(signature);
+            doc.Add(chairMan);
+            doc.Add(punongBarangay);
+            doc.Add(dateRight);
+
+            doc.Add(witness);
+            doc.Add(wSignature);
+            doc.Add(witnessMan);
+            doc.Add(pos);
+            doc.Add(dateRight);
+
+
+
+            // ---------------------------------------------------------
+
+
+
+            Paragraph address = new Paragraph($"");
+            Paragraph number = new Paragraph($"");
+            
+            
 
             // Close the document
             doc.Close();
