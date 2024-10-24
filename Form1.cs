@@ -15,139 +15,223 @@ namespace WindowsFormPdfGenerator
         {
             InitializeComponent();
         }
-
+        // Define fonts
+        iTextSharp.text.Font fontHeader = FontFactory.GetFont(FontFactory.TIMES_BOLD, 8, BaseColor.BLACK);
+        iTextSharp.text.Font fontRegular = FontFactory.GetFont(FontFactory.TIMES, 6, BaseColor.BLACK);
+        iTextSharp.text.Font fontBold = FontFactory.GetFont(FontFactory.TIMES_BOLD, 5, BaseColor.BLACK);
         private void Form1_Load(object sender, EventArgs e)
         {
 
         }
-
         private void button1_Click(object sender, EventArgs e)
         {
-            // Create a PDF document
-            Document doc = new Document();
-            PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream("example.pdf", FileMode.Create));
+            // Define the dimensions of the portrait ID card
+            Rectangle idCardSizePortrait = new Rectangle(54f * 2.835f, 85.6f * 2.835f);
 
-            // Open the document to write content
-            doc.Open();
+            using (Document doc = new Document(idCardSizePortrait))
+            {
+                PdfWriter writer = PdfWriter.GetInstance(doc, new FileStream("PortraitIDCard.pdf", FileMode.Create));
+                doc.Open();
 
-            /* Add image
-            iTextSharp.text.Image img = iTextSharp.text.Image.GetInstance("D:\\Programs c#\\PdfGenerator\\pictures\\scene.jpg");
-            doc.Add(img);*/
+                // Add the first page content
+                AddFirstPageContent(doc, writer, idCardSizePortrait);
 
-            iTextSharp.text.Image background = iTextSharp.text.Image.GetInstance("D:\\Barangay Picture\\Caloocan_City.png");
+                // Add a second page
+                doc.NewPage(); // Create a new page
+                AddSecondPageContent(doc, writer, idCardSizePortrait);
 
-            float imageWidth = 500f;
-            float imageHeight = 300f;
-            background.ScaleAbsolute(imageWidth, imageHeight);
+                // Close the document
+                doc.Close();
+            }
 
-            // Get the page size
-            Rectangle pageSize = doc.PageSize;
-            float pageWidth = pageSize.Width;
-            float pageHeight = pageSize.Height;
+            MessageBox.Show("PDF GENERATED SUCCESSFULLY!");
+            GetDataFromMySQL();
+        }
 
-            // Calculate the center position
-            float xPosition = (pageWidth - imageWidth) / 2;
-            float yPosition = (pageHeight - imageHeight) / 2;
+        private void AddFirstPageContent(Document doc, PdfWriter writer, Rectangle idCardSizePortrait)
+        {
+            // Add the background image and scale it to fit the ID card size
+            iTextSharp.text.Image background = iTextSharp.text.Image.GetInstance("C:\\Barangay Picture\\Caloocan_City.png");
+            background.ScaleToFit(idCardSizePortrait.Width, idCardSizePortrait.Height);
+            background.SetAbsolutePosition(0f, 50f);
 
-            // Set the absolute position to center the image
-            background.SetAbsolutePosition(xPosition, yPosition);
-
-            // Create a PdfGState to control the opacity
-            PdfGState gState = new PdfGState();
-            gState.FillOpacity = 0.1f; // Set opacity (0.0f to 1.0f, where 1.0 is fully opaque)
-
-            // Add the background image with opacity
             PdfContentByte canvas = writer.DirectContent;
+
+            // Add the image with opacity
+            PdfGState gState = new PdfGState { FillOpacity = 0.1f, StrokeOpacity = 0.1f };
             canvas.SaveState();
             canvas.SetGState(gState);
             canvas.AddImage(background);
             canvas.RestoreState();
 
 
-            background.ScaleToFit(doc.PageSize.Width, doc.PageSize.Height);
-            background.SetAbsolutePosition(0, 0); // Position it at the bottom-left corner
-            // Add the image to the document
 
-            // Header of the document
-            iTextSharp.text.Font font1bold = FontFactory.GetFont(FontFactory.TIMES_BOLD, 16, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-            iTextSharp.text.Font font1 = FontFactory.GetFont(FontFactory.TIMES, 16, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-            iTextSharp.text.Font font = FontFactory.GetFont(FontFactory.TIMES, 11, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-            iTextSharp.text.Font fontTitle = FontFactory.GetFont(FontFactory.TIMES_BOLD, 14, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
-            iTextSharp.text.Font fontRight = FontFactory.GetFont(FontFactory.TIMES_BOLD, 13, iTextSharp.text.Font.BOLD, BaseColor.BLACK);
+            // Add header text
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("Republic of the Philippines", fontHeader), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 30f, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("City of Caloocan", fontHeader), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 45f, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("OFFICE OF THE PUNONG BARANGAY", fontBold), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 60f, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("Barangay 22, Zone 2, District II", fontRegular), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 75f, 0);
 
-            Paragraph headerClearance = new Paragraph($"Republic City of the Philippines", font1bold);          
-            Paragraph headerClearance1 = new Paragraph($"City of Caloocan",font);            
-            Paragraph headerClearance2 = new Paragraph($"OFFICE OF THE PUNONG BARANGAY",font1);
-            Paragraph headerClearance3 = new Paragraph($"Barangay 22, Zone 2, District II", font);
-            Paragraph title = new Paragraph($"\n\nBARANGAY CERTIFICATION", fontTitle);
-            Paragraph bodyIndigency = new Paragraph($"\n\n\t\t\tThis is to Certify that {textBox1.Text} {textBox2.Text}., A resident of {textBox3.Text} will use this Barangay Certification.\n" +
-                $"\n\t\tThis certification is issued for whatever legal purpose or purposes this may serve.\n" +
-                $"\n\t\tSigned this on the (Date Today) at BARANGAY 22 ZONE 2 DISTRICT II , CALOOCAN CITY, NATIONAL CAPITAL REGION, PHILIPPINES.\n" +
-                $"\n\t\tThis certification is valid only for 1 year from the issuance.\n");
+            // Add full name and details text
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase($"{textBox1.Text}", fontBold), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 150f, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("FULL NAME", fontRegular), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 165f, 0);
 
-            Paragraph signature = new Paragraph($"\n\nSIGNATURE", fontTitle);
-            Paragraph punongBarangay = new Paragraph($"Punong Barangay", font);
-            Paragraph chairMan = new Paragraph($"RONALDO B. BAUTISTA", fontRight);
-            Paragraph dateRight = new Paragraph($"DATE TODAY", font);
+            // Move the line under the name higher
+            canvas.MoveTo(10f, idCardSizePortrait.Height - 160f); // Raised by 10 points
+            canvas.LineTo(idCardSizePortrait.Width - 10f, idCardSizePortrait.Height - 160f);
+            canvas.Stroke();
 
-            Paragraph witness = new Paragraph($"\n\nWitnessed by:", font);
-            Paragraph wSignature = new Paragraph($"SIGNATURE", fontTitle);
-            Paragraph witnessMan = new Paragraph($"ANTHONY S. MULAWIN", fontRight);
-            Paragraph pos = new Paragraph($"Secretary", font);
-            
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase($"{textBox3.Text}", fontBold), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 195f, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("RESIDENCE ADDRESS", fontRegular), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 205f, 0);
 
-            headerClearance.Alignment = Element.ALIGN_CENTER;
-            headerClearance1.Alignment = Element.ALIGN_CENTER;
-            headerClearance2.Alignment = Element.ALIGN_CENTER;
-            headerClearance3.Alignment = Element.ALIGN_CENTER;
-            title.Alignment = Element.ALIGN_CENTER;
+            // Move the line under the address higher
+            canvas.MoveTo(10f, idCardSizePortrait.Height - 200f); // Raised by 10 points
+            canvas.LineTo(idCardSizePortrait.Width - 10f, idCardSizePortrait.Height - 200f);
+            canvas.Stroke();
 
-            signature.Alignment = Element.ALIGN_RIGHT;
-            punongBarangay.Alignment = Element.ALIGN_RIGHT;
-            chairMan.Alignment = Element.ALIGN_RIGHT;
-            dateRight.Alignment = Element.ALIGN_RIGHT;
-            witness.Alignment = Element.ALIGN_RIGHT;
-            chairMan.Alignment = Element.ALIGN_RIGHT;
-            dateRight.Alignment = Element.ALIGN_RIGHT;
-            witness.Alignment = Element.ALIGN_RIGHT;
-            wSignature.Alignment = Element.ALIGN_RIGHT;
-            witnessMan.Alignment = Element.ALIGN_RIGHT;
-            pos.Alignment = Element.ALIGN_RIGHT;
+            // Add signature label
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("SIGNATURE", fontRegular), idCardSizePortrait.Width / 2, idCardSizePortrait.Height - 240f, 0);
 
-            doc.Add(headerClearance);
-            doc.Add(headerClearance1);
-            doc.Add(headerClearance2);
-            doc.Add(headerClearance3);
-            doc.Add(title);
-            doc.Add(bodyIndigency);
+            // Add profile picture
+            iTextSharp.text.Image profilePic = iTextSharp.text.Image.GetInstance("C:\\Barangay Picture\\Caloocan_City.png");
+            profilePic.ScaleAbsolute(40f, 40f);
+            profilePic.SetAbsolutePosition(idCardSizePortrait.Width - 45f, 120f);
+            PdfContentByte underCanvas = writer.DirectContentUnder;
+            underCanvas.AddImage(profilePic);
+        }
 
-            doc.Add(signature);
-            doc.Add(chairMan);
-            doc.Add(punongBarangay);
-            doc.Add(dateRight);
+        private void AddSecondPageContent(Document doc, PdfWriter writer, Rectangle idCardSizePortrait)
+        {
+            // Add the background image and scale it to fit the ID card size
+            iTextSharp.text.Image background = iTextSharp.text.Image.GetInstance("C:\\Barangay Picture\\Caloocan_City.png");
+            background.ScaleToFit(idCardSizePortrait.Width, idCardSizePortrait.Height);
+            background.SetAbsolutePosition(0f, 50f);
 
-            doc.Add(witness);
-            doc.Add(wSignature);
-            doc.Add(witnessMan);
-            doc.Add(pos);
-            doc.Add(dateRight);
+            PdfContentByte canvas = writer.DirectContent;
+
+            // Add the image with opacity
+            PdfGState gState = new PdfGState { FillOpacity = 0.1f, StrokeOpacity = 0.1f };
+            canvas.SaveState();
+            canvas.SetGState(gState);
+            canvas.AddImage(background);
+            canvas.RestoreState();
 
 
 
-            // ---------------------------------------------------------
+
+            // Create a smaller font for the header
+            iTextSharp.text.Font fontHeaderSmall = FontFactory.GetFont(FontFactory.TIMES, 4, BaseColor.BLACK);
+            iTextSharp.text.Font fontHeaderSmaller = FontFactory.GetFont(FontFactory.TIMES, 3, BaseColor.BLACK);
+
+            // Combine the four lines into one
+            string combined1 = "BIRTHDAY\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0  " +
+                "SEX \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 " +
+                "HEIGHT \u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 WEIGHT";
+
+            // Draw a line above the text (adjust the Y-position for the line as needed)
+            float yLinePosition = idCardSizePortrait.Height - 25f; // Position the line just above the text
+            float leftMargin = 10f; // Start position of the line (left side)
+            float rightMargin = idCardSizePortrait.Width - 10f; // End position of the line (right side)
+
+            // Draw the line
+            canvas.MoveTo(leftMargin, yLinePosition);
+            canvas.LineTo(rightMargin, yLinePosition);
+            canvas.Stroke();
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase(combined1, fontHeaderSmall), idCardSizePortrait.Width / 2, yLinePosition - 10f, 0);
+
+            // Combine the second set of text into one line
+            string combined2 = "CIVIL STATUS\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0  " +
+                               "BLOOD TYPE\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 DATE ISSUED";
+
+            // Draw the second line above combined2 text, move down from the first text
+            float yLinePosition2 = yLinePosition - 35f; // Move it further down for combined2
+
+            // Draw the line above combined2
+            canvas.MoveTo(leftMargin, yLinePosition2);
+            canvas.LineTo(rightMargin, yLinePosition2);
+            canvas.Stroke();
+
+            // Add the second combined header in one line
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase(combined2, fontHeaderSmall), idCardSizePortrait.Width / 2, yLinePosition2 - 10f, 0);
+
+            // Combine the second set of text into one line
+            string combined3 = "DATE OF EXPIRY\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 " +
+                               "CONTACT NUMBER\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0\u00A0 PRECINCT NUMBER";
+
+            // Draw the second line above combined2 text, move down from the first text
+            float yLinePosition3 = yLinePosition2 - 35f; // Move it further down for combined2
+
+            // Draw the line above combined2
+            canvas.MoveTo(leftMargin, yLinePosition3);
+            canvas.LineTo(rightMargin, yLinePosition3);
+            canvas.Stroke();
+
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase(combined3, fontHeaderSmall), idCardSizePortrait.Width / 2, yLinePosition3 - 10f, 0);
+
+            // Add the second combined header in one line
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase($"CONTACT PERSON IN CASE OF EMERGENCY", fontRegular), idCardSizePortrait.Width / 2, yLinePosition3 - 30f, 0);
 
 
 
-            Paragraph address = new Paragraph($"");
-            Paragraph number = new Paragraph($"");
-            
-            
+            // Draw the second line above combined2 text, move down from the first text
+            float yLinePosition4 = yLinePosition3 - 50f; // Move it further down for combined2
 
-            // Close the document
-            doc.Close();
+            // Draw the line above combined2
+            canvas.MoveTo(leftMargin, yLinePosition4);
+            canvas.LineTo(rightMargin, yLinePosition4);
+            canvas.Stroke();
 
-            MessageBox.Show("PDF GENERATED SUCCESSFULLY!");
-            GetDataFromMySQL();
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("NAME", fontHeaderSmall), idCardSizePortrait.Width / 2, yLinePosition4 - 10f, 0);
+
+
+            // Draw the second line above combined2 text, move down from the first text
+            float yLinePosition5 = yLinePosition4 - 25f; // Move it further down for combined2
+
+            // Draw the line above combined2
+            canvas.MoveTo(leftMargin, yLinePosition5);
+            canvas.LineTo(rightMargin, yLinePosition5);
+            canvas.Stroke();
+
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("CONTACT NUMBER", fontHeaderSmall), idCardSizePortrait.Width / 2, yLinePosition5 - 10f, 0);
+
+
+
+
+
+            // Define the text you want to center as a paragraph
+            string certify = "This is to certify that the person whose name, photograph,\n and signature appear herein is a bonafide resident of Barangay 22, Zone 2, District II, Caloocan City." +
+                             "\nIf lost and found, please return this ID to Barangay 22, Zone 2, District II, Caloocan City.";
+
+            // Create a Paragraph to hold the text
+            Paragraph paragraph = new Paragraph(certify, fontHeaderSmaller)
+            {
+                Alignment = Element.ALIGN_CENTER // Set paragraph alignment to center
+            };
+
+            // Define the Y-position of the paragraph
+            float yPosition = yLinePosition5 - 20f;
+
+            // Add the paragraph to the canvas, wrapped in a ColumnText object
+            ColumnText column = new ColumnText(canvas);
+            column.SetSimpleColumn(new Rectangle(idCardSizePortrait.Left, yPosition - 50f, idCardSizePortrait.Right, yPosition)); // Define the rectangle area where the text will fit
+            column.AddElement(paragraph);
+            column.Go(); // Render the paragraph
+
+            float footpos = yLinePosition5 - 40f;
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("ISSUED BY:", fontHeaderSmall), idCardSizePortrait.Width / 2, footpos, 0);
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("RONALD B. BAUTISTA", fontHeaderSmall), idCardSizePortrait.Width / 2, footpos - 13f, 0);
+
+
+
+            // Draw the line above combined2
+            canvas.MoveTo(leftMargin, footpos - 15f);
+            canvas.LineTo(rightMargin, footpos - 15f);
+            canvas.Stroke();
+            ColumnText.ShowTextAligned(canvas, Element.ALIGN_CENTER, new Phrase("Punong Barangay", fontHeaderSmall), idCardSizePortrait.Width / 2, footpos - 20f, 0);
+
+
+
+
         }
         private void GetDataFromMySQL()
         {

@@ -46,7 +46,7 @@
             button1.Name = "button1";
             button1.Size = new Size(142, 38);
             button1.TabIndex = 19;
-            button1.Text = "Generate PDF";
+            button1.Text = "Login";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
             // 
@@ -140,6 +140,7 @@
             Controls.Add(label2);
             Controls.Add(label1);
             Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
             Load += Form1_Load;
             ResumeLayout(false);
